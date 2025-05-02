@@ -1,11 +1,23 @@
 import { useEffect, useState } from "react";
 import {
+  onMessage,
+  fetchLikedFormSubmissions,
   saveLikedFormSubmission,
 } from "../service/mockServer";
 
 export function useToastManager() {
   const [toasts, setToasts] = useState([]);
   const [liked, setLiked] = useState([]);
+
+  useEffect(() => {
+    onMessage((newSubmission) => {
+      setToasts((prev) => [...prev, newSubmission]);
+    });
+
+    fetchLikedFormSubmissions()
+      .then((res) => setLiked(res.formSubmissions))
+      .catch(console.error);
+  }, []);
 
   const likeToast = async (toast) => {
     try {
@@ -21,6 +33,9 @@ export function useToastManager() {
     }
   };
 
+  const dismissToast = (id) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
 
-  return { toasts, liked, likeToast };
+  return { toasts, liked, likeToast, dismissToast };
 }
